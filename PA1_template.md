@@ -15,7 +15,7 @@ I hope that you have comments, either on the github commit, or on the assessment
 
 It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. 
 
-These type of devices are part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and
+These type of devices are part of the quantified self movement  a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and
 interpreting the data. 
 
 This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
@@ -49,28 +49,24 @@ Show any code that is needed to
 
 --------------------------------------------------------------------------------
 
-```{r, tidy=TRUE}
-<<knit_theme$set("edit-eclipse")>>
 
+```r
+if (!file.exists("activity.zip")) {
     
-        if(!file.exists("activity.zip")) {
-        
-        fileurl = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
-        download.file(fileurl, destfile="activity.zip")
-        unzip("activity.zip")
-
-        }
-        
-        activityraw <- read.csv("activity.csv", 
-                                colClasses = rep("character",3))
-
+    fileurl = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+    download.file(fileurl, destfile = "activity.zip")
+    unzip("activity.zip")
     
+}
+
+activityraw <- read.csv("activity.csv", colClasses = rep("character", 3))
 ```
 
 *Comment: The raw interval data are strings of length 1 to 4, with implicit
 hours and minutes.*
 
-```{r, echo=TRUE}
+
+```r
 ## The packages I am using are
 
     library("stringr")
@@ -80,8 +76,8 @@ hours and minutes.*
 ```
 
 
-```{r, echo=TRUE}
 
+```r
 ##  pad the interval string to 4 characters with leading zeros and
 ##  add a column that combines date and interval values to a POSIXct variable
 
@@ -93,7 +89,6 @@ hours and minutes.*
     activityraw$date <- as.Date (activityraw$date) 
 
     activity <- activityraw[complete.cases(activityraw),]  ## rm NAs
-
 ```
 
 
@@ -107,7 +102,8 @@ For this part of the assignment, you can ignore the missing values in the datase
 2. Calculate and report the mean and median total number of steps taken per day
 
 
-```{r, fig.width=9}
+
+```r
 ##  Recast the data by days and calculate sum for each day
 
     actmelt <- melt(activity, id.vars = "date", measure.vars="steps" ) 
@@ -119,21 +115,29 @@ For this part of the assignment, you can ignore the missing values in the datase
     hist(actcast$steps, main = "Plot 1: Frequency of Total Steps/Day",
          xlab = "Steps Per Day", breaks = 40, col = "gray",
          ylab= "Frequency (count per 61 day period)")
-
 ```
 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+
 *Comment: There are 2 days in the set with 0 steps, in addition to 8 days of NAs which are excluded from this plot.*
-```{r}
 
+```r
     mean(actcast$steps) ; median(actcast$steps)
+```
 
+```
+## [1] 10766
+```
+
+```
+## [1] 10765
 ```
 
 
 
 **Answer to Question 2 in this section:**
 
-The **mean is `r prettyNum(mean(actcast$steps),big.mark =",")` steps/day** and the **median is `r prettyNum(median(actcast$steps),big.mark =",")` steps/day** for the 61 day period ending November 30, 2012.
+The **mean is 10,766 steps/day** and the **median is 10,765 steps/day** for the 61 day period ending November 30, 2012.
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -145,7 +149,8 @@ The **mean is `r prettyNum(mean(actcast$steps),big.mark =",")` steps/day** and t
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r, fig.width=9}
+
+```r
 ## recast the data by 5 min. interval, then calculate mean for each interval
 
         stepmelt <- melt(activity, id.vars = c("date", "interval"), 
@@ -166,19 +171,19 @@ The **mean is `r prettyNum(mean(actcast$steps),big.mark =",")` steps/day** and t
              )
 ```
 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+
 **Answer to Question 2 in this section:**
 
-```{r, echo = TRUE }
 
+```r
 ###     determine the maximum average interval
 
         stepmax <- stepcast[(max(stepcast$steps)==stepcast$steps),]
-
-
 ```
 
 
-The time interval with the highest (or maximum) average steps occurs at  **`r str_extract(stepmax$intervalct, "..:..")`** with a mean of **~ `r round(stepmax$steps)`** steps.
+The time interval with the highest (or maximum) average steps occurs at  **08:35** with a mean of **~ 206** steps.
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -198,17 +203,24 @@ Note that there are a number of days/intervals where there are missing values (c
 
 ----------------------------------------------------------------------------
 
-```{r, echo=TRUE}
 
+```r
     sum(!complete.cases(activityraw)); mean(is.na(activityraw$steps))
+```
 
+```
+## [1] 2304
+```
+
+```
+## [1] 0.1311
 ```
 
 **Response to Question 1 in this Section:**
 
-There are **`r prettyNum(sum(!complete.cases(activityraw)),big.mark =",")`** rows with missing 'steps' data.
+There are **2,304** rows with missing 'steps' data.
 
-In other words, about **`r round(100 * mean(is.na(activityraw$steps)))` %** of the step data is NA.
+In other words, about **13 %** of the step data is NA.
 
 
 -------------------------------------------------------------------------------
@@ -216,7 +228,7 @@ In other words, about **`r round(100 * mean(is.na(activityraw$steps)))` %** of t
 
 **Question 2: Explanation: Strategy for filling missing data**
 
-All of the NAs occur on 8 dates out of 61 dates, which is `r round(100*8/61)`% of the dates, consistent with total NA count. As a result, there are only `r 61-8` observations for each interval.
+All of the NAs occur on 8 dates out of 61 dates, which is 13% of the dates, consistent with total NA count. As a result, there are only 53 observations for each interval.
 
 Using a uniform distribution, seeded, with range, 0.5 to 53.5, and subsequently
 rounded to give an integer value (1 to 53),  this random result can specify which 
@@ -227,45 +239,52 @@ For each missing step value, a value from the same interval on another date will
 Both the uniformity of the dates selected by this method, and the resulting data will be summarized for comparison with the original data set
 
 
-```{r, tidy=TRUE}
-##  segregate good and bad data
 
-    actbad <- activityraw[!complete.cases(activityraw),]  ## df of NAs
-    
-    datelist <- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
+```r
+## segregate good and bad data
 
-##  create a uniformly distributed vector of good dates with
-##  length equal to the rows of NA data (actbad)
+actbad <- activityraw[!complete.cases(activityraw), ]  ## df of NAs
 
-    set.seed(42)
+datelist <- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
 
-    randlist <- datelist[round(runif(n = nrow(actbad), min = 0.5, 
-                        max = (length(datelist + 0.5))))]   
+## create a uniformly distributed vector of good dates with length equal to
+## the rows of NA data (actbad)
+
+set.seed(42)
+
+randlist <- datelist[round(runif(n = nrow(actbad), min = 0.5, max = (length(datelist + 
+    0.5))))]
 
 ## verify good distribution of dates
 
-    summary(randlist)
+summary(randlist)
+```
 
-## replace the NAs steps in actbad with selected values from activity
-## note: time permitting, I will eliminate for() and use sapply().
+```
+##         Min.      1st Qu.       Median         Mean      3rd Qu. 
+## "2012-10-02" "2012-10-15" "2012-10-28" "2012-10-30" "2012-11-16" 
+##         Max. 
+## "2012-11-29"
+```
 
-    intervalist <- actbad[,"interval"]  
+```r
+## replace the NAs steps in actbad with selected values from activity note:
+## time permitting, I will eliminate for() and use sapply().
+
+intervalist <- actbad[, "interval"]
+
+for (i in seq_along(randlist)) {
     
-    for(i in seq_along(randlist)) {
-        
-      actbad[i, 1] <- activity[(randlist[i]==activity$date) & 
-                                (intervalist[i] == activity$interval),"steps"]
-
-    }
+    actbad[i, 1] <- activity[(randlist[i] == activity$date) & (intervalist[i] == 
+        activity$interval), "steps"]
+    
+}
 
 ## combine data to make the new dataset (Question 3 in this section)
 
-    newact <- rbind(activity, actbad)
+newact <- rbind(activity, actbad)
 
-    newact <- newact[order(newact$iposixct),]
-    
-    
-
+newact <- newact[order(newact$iposixct), ]
 ```
 
 -------------------------------------------------------------------------------
@@ -273,7 +292,8 @@ Both the uniformity of the dates selected by this method, and the resulting data
 **Responses to Question 4 for this section of the assignment**
 
 
-```{r, fig.width=9}
+
+```r
 ## prep histogram
 
     newmelt <- melt(newact, id.vars = "date", measure.vars= "steps" )
@@ -284,28 +304,38 @@ Both the uniformity of the dates selected by this method, and the resulting data
     hist(newcast$steps, main = "Plot 3: Daily Total Steps after NAs Replaced",
          xlab = "Steps per day", breaks = 40, col = "gray",
          ylab= "Frequency (days in 61 day period)")
+```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+
+```r
     mean(newcast$steps) ; median(newcast$steps)
+```
 
+```
+## [1] 10826
+```
+
+```
+## [1] 10714
 ```
 
 **Remarks (#4 in 'Imputing missing values section)**
 
 
 The replacement of NAs **changed the daily steps mean by 
-`r round(100*(mean(newcast$steps)- mean(actcast$steps))/mean(actcast$steps), digits=2)`%
-and the median by `r round(100*(median(newcast$steps)- median(actcast$steps))/median(actcast$steps), digits=2)`%.**
+0.56%
+and the median by -0.47%.**
 
-Imputing data to the NAs changed the **total steps to `r prettyNum(sum(newact$steps), big.mark = ",")` from `r prettyNum(sum(activity$steps, na.rm  = TRUE), big.mark = ",")`.**  This change in totals is consistent with adding 8 days of missing data to the 53 days of good data to create the 61 day dataset.
+Imputing data to the NAs changed the **total steps to 660,396 from 570,608.**  This change in totals is consistent with adding 8 days of missing data to the 53 days of good data to create the 61 day dataset.
 
 Here is a comparison of summary statistics before & after imputing values to NAs:
-```{r, echo=FALSE}
 
-OriginalSet <- summary(actcast$steps, digits=5)
-ImputedSet <- summary(newcast$steps, digits=5)
-NetChanges <- ImputedSet - OriginalSet
-rbind(ImputedSet, OriginalSet, NetChanges)
-
+```
+##             Min. 1st Qu. Median  Mean 3rd Qu.  Max.
+## ImputedSet    41    8918  10714 10826   12883 21194
+## OriginalSet   41    8841  10765 10766   13294 21194
+## NetChanges     0      77    -51    60    -411     0
 ```
 Imputing the missing data did not significantly alter the summary statistics.  
 
@@ -317,7 +347,7 @@ Imputing the missing data did not significantly alter the summary statistics.
 
 For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 
-1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+1. Create a new factor variable in the dataset with two levels  weekday and weekend indicating whether a given date is a weekday or weekend day.
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
@@ -325,24 +355,21 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 **Responses to Questions in this Section:**
 
-```{r, tidy=TRUE }
 
-##  part 1: building a two level factor per #1
-##  using wday() function which returns a day of week number
-##  and a character vector to set 'weekday' for 2:5
-##  and "weekend" for 1,7 - and then bind to df as factor.
+```r
+## part 1: building a two level factor per #1 using wday() function which
+## returns a day of week number and a character vector to set 'weekday' for
+## 2:5 and 'weekend' for 1,7 - and then bind to df as factor.
 
-    weeker <- c("weekend", rep("weekday",5), "weekend")
+weeker <- c("weekend", rep("weekday", 5), "weekend")
 
-    newact$dayo <- as.factor(weeker[wday(newact$date)])
-    
-
+newact$dayo <- as.factor(weeker[wday(newact$date)])
 ```
 
 *Comment: While the assignment suggested the weekdays() function, the wday() function, which returns an integer value for the day, required less typing. ;)*
 
-```{r, fig.width = 9}
 
+```r
 ## Prepare the panel plot per Question 2 in this section
 
 ## recast the data by 5 min. interval, then calculate mean for each interval
@@ -360,9 +387,9 @@ For this part the weekdays() function may be of some help here. Use the dataset 
         qplot(intervalct, steps, data = daycast, facets = dayo~., geom = "line", 
               xlab = "Interval (Time of Day)", ylab = "Steps/Day",
               main = "Mean Steps per 5 Minute Interval for Weekdays & Weekends")
-
-
 ```
+
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13.png) 
 
 *Comment: Weekends seem to be characterized by sleeping in, followed by
 more changes in activity levels throughout the day, and staying up later.
