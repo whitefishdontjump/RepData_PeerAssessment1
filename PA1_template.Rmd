@@ -124,17 +124,51 @@ For this part of the assignment, you can ignore the missing values in the datase
 ```
 
 *Comment: There are 2 days in the set with 0 steps, in addition to 8 days of NAs which are excluded from this plot.*
-```{r DailyMeanMedian}
-
-    mean(actcast$steps) ; median(actcast$steps)
-
-```
-
-
 
 **Answer to Question 2 in this section:**
 
-The **mean is `r prettyNum(mean(actcast$steps),big.mark =",")` steps/day** and the **median is `r prettyNum(median(actcast$steps),big.mark =",")` steps/day** for the 61 day period ending November 30, 2012.
+```{r DailyMeanMedian}
+
+
+    meancast <- dcast(actmelt, date ~ variable, fun.aggregate = mean, 
+                     na.rm = TRUE)
+
+
+    mediancast <- dcast(actmelt, date ~ variable, fun.aggregate = median, 
+                     na.rm = TRUE)
+
+```
+
+The series of daily medians are all zero, because on each and every day, more than half of the intervals have zero steps. The summary() on the series of medians
+confirms that all are zero:
+
+```{r daymedians}
+
+summary(mediancast$steps)   ### they are all zero, each and every day
+
+```
+
+The series of daily means, however, have substantial variation across the set:
+
+```{r daymeans}
+
+summary(meancast$steps)
+
+meancast$steps  ## prints a vector of daily means, in chronological order
+
+```
+
+As indicated by the histogram, there is also substantial variation in the daily totals
+
+```{r meansdailytotals}
+
+  mean(actcast$steps) ; median(actcast$steps) ## median & mean of daily totals
+
+```
+
+Across the daily totals in the histogram, Plot1, the **mean is `r prettyNum(mean(actcast$steps),big.mark =",")` total steps/day** and the **median is `r prettyNum(median(actcast$steps),big.mark =",")` total steps/day** for the
+two month period ending November 30, 2012.
+
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------

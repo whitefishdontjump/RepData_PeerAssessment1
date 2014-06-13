@@ -122,8 +122,61 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 *Comment: There are 2 days in the set with 0 steps, in addition to 8 days of NAs which are excluded from this plot.*
 
+**Answer to Question 2 in this section:**
+
+
 ```r
-    mean(actcast$steps) ; median(actcast$steps)
+    meancast <- dcast(actmelt, date ~ variable, fun.aggregate = mean, 
+                     na.rm = TRUE)
+
+    mediancast <- dcast(actmelt, date ~ variable, fun.aggregate = median, 
+                     na.rm = TRUE)
+```
+
+The series of daily medians are all zero, because on each and every day, more than half of the intervals have zero steps. The summary() on the series of medians
+confirms that all are zero:
+
+
+```r
+summary(mediancast$steps)   ### they are all zero, each and every day
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0       0       0       0       0       0
+```
+
+The series of daily means, however, have substantial variation across the set:
+
+
+```r
+summary(meancast$steps)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    0.14   30.70   37.40   37.40   46.20   73.60
+```
+
+```r
+meancast$steps  ## prints a vector of daily means, in chronological order
+```
+
+```
+##  [1]  0.4375 39.4167 42.0694 46.1597 53.5417 38.2465 44.4826 34.3750
+##  [9] 35.7778 60.3542 43.1458 52.4236 35.2049 52.3750 46.7083 34.9167
+## [17] 41.0729 36.0938 30.6285 46.7361 30.9653 29.0104  8.6528 23.5347
+## [25] 35.1354 39.7847 17.4236 34.0938 53.5208 36.8056 36.7049 36.2465
+## [33] 28.9375 44.7326 11.1771 43.7778 37.3785 25.4722  0.1424 18.8924
+## [41] 49.7882 52.4653 30.6979 15.5278 44.3993 70.9271 73.5903 50.2708
+## [49] 41.0903 38.7569 47.3819 35.3576 24.4688
+```
+
+As indicated by the histogram, there is also substantial variation in the daily totals
+
+
+```r
+  mean(actcast$steps) ; median(actcast$steps) ## median & mean of daily totals
 ```
 
 ```
@@ -134,11 +187,9 @@ For this part of the assignment, you can ignore the missing values in the datase
 ## [1] 10765
 ```
 
+Across the daily totals in the histogram, Plot1, the **mean is 10,766 total steps/day** and the **median is 10,765 total steps/day** for the
+two month period ending November 30, 2012.
 
-
-**Answer to Question 2 in this section:**
-
-The **mean is 10,766 steps/day** and the **median is 10,765 steps/day** for the 61 day period ending November 30, 2012.
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
