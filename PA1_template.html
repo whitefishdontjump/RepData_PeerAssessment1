@@ -280,8 +280,7 @@ hours and minutes.</em></p>
 <pre><code class="r">##  Recast the data by days and calculate sum for each day
 
     actmelt &lt;- melt(activity, id.vars = &quot;date&quot;, measure.vars=&quot;steps&quot; ) 
-    actcast &lt;- dcast(actmelt, date ~ variable, fun.aggregate = sum, 
-                     na.rm = TRUE)
+    actcast &lt;- dcast(actmelt, date ~ variable, fun.aggregate = sum)
 
 ## create the histogram
 
@@ -296,11 +295,9 @@ hours and minutes.</em></p>
 
 <p><strong>Answer to Question 2 in this section:</strong></p>
 
-<pre><code class="r">    meancast &lt;- dcast(actmelt, date ~ variable, fun.aggregate = mean, 
-                     na.rm = TRUE)
+<pre><code class="r">    meancast &lt;- dcast(actmelt, date ~ variable, fun.aggregate = mean)
 
-    mediancast &lt;- dcast(actmelt, date ~ variable, fun.aggregate = median, 
-                     na.rm = TRUE)
+    mediancast &lt;- dcast(actmelt, date ~ variable, fun.aggregate = median)
 </code></pre>
 
 <p>The series of daily medians are all zero, because on each and every day, more than half of the intervals have zero steps. The summary() on the series of medians
@@ -364,8 +361,7 @@ two month period ending November 30, 2012.</p>
         stepmelt &lt;- melt(activity, id.vars = c(&quot;date&quot;, &quot;interval&quot;), 
                          measure.vars= &quot;steps&quot; )
 
-        stepcast &lt;- dcast(stepmelt, interval ~ variable, fun.aggregate = mean, 
-                                 na.rm = TRUE)
+        stepcast &lt;- dcast(stepmelt, interval ~ variable, fun.aggregate = mean)
 
 
 ###     add a column with POSIXct interval for X axis then plot.
@@ -386,6 +382,12 @@ two month period ending November 30, 2012.</p>
 <pre><code class="r">###     determine the maximum average interval
 
         stepmax &lt;- stepcast[(max(stepcast$steps)==stepcast$steps),]
+
+        stepmax
+</code></pre>
+
+<pre><code>##     interval steps          intervalct
+## 104     0835 206.2 0000-01-01 08:35:00
 </code></pre>
 
 <p>The time interval with the highest (or maximum) average steps occurs at  <strong>08:35</strong> with a mean of <strong>~ 206</strong> steps.</p>
@@ -438,23 +440,23 @@ date to select from the 53 dates with good data.</p>
 
 <p>Both the uniformity of the dates selected by this method, and the resulting data will be summarized for comparison with the original data set</p>
 
-<pre><code class="r">## segregate good and bad data
+<pre><code class="r">##  segregate good and bad data
 
-actbad &lt;- activityraw[!complete.cases(activityraw), ]  ## df of NAs
+    actbad &lt;- activityraw[!complete.cases(activityraw),]  ## df of NAs
 
-datelist &lt;- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
+    datelist &lt;- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
 
-## create a uniformly distributed vector of good dates with length equal to
-## the rows of NA data (actbad)
+##  create a uniformly distributed vector of good dates with
+##  length equal to the rows of NA data (actbad)
 
-set.seed(42)
+    set.seed(42)
 
-randlist &lt;- datelist[round(runif(n = nrow(actbad), min = 0.5, max = (length(datelist + 
-    0.5))))]
+    rdate &lt;- datelist[round(runif(n = nrow(actbad), min = 0.5, 
+                        max = (length(datelist + 0.5))))]   
 
-## verify good distribution of dates
+##  verify good distribution of dates
 
-summary(randlist)
+    summary(rdate)
 </code></pre>
 
 <pre><code>##         Min.      1st Qu.       Median         Mean      3rd Qu. 
@@ -463,23 +465,24 @@ summary(randlist)
 ## &quot;2012-11-29&quot;
 </code></pre>
 
-<pre><code class="r">## replace the NAs steps in actbad with selected values from activity To Do:
-## Replace for() with sapply, time permitting
+<pre><code class="r">##  replace the NAs steps in actbad with selected values from activity
 
-intervalist &lt;- actbad[, &quot;interval&quot;]
+    intbad &lt;- actbad[,&quot;interval&quot;]  
 
-for (i in seq_along(randlist)) {
+    for(i in seq_along(rdate)) {
 
-    actbad[i, 1] &lt;- activity[(randlist[i] == activity$date) &amp; (intervalist[i] == 
-        activity$interval), &quot;steps&quot;]
+            actbad[i, &quot;steps&quot;] &lt;- 
+                    activity[ (rdate[i] == activity$date) &amp; 
+                              (intbad[i] == activity$interval),
+                              &quot;steps&quot;]
 
-}
+    }
 
 ## combine data to make the new dataset (Question 3 in this section)
 
-newact &lt;- rbind(activity, actbad)
+    newact &lt;- rbind(activity, actbad)
 
-newact &lt;- newact[order(newact$iposixct), ]
+    newact &lt;- newact[order(newact$iposixct),]
 </code></pre>
 
 <hr/>
@@ -490,8 +493,7 @@ newact &lt;- newact[order(newact$iposixct), ]
 
     newmelt &lt;- melt(newact, id.vars = &quot;date&quot;, measure.vars= &quot;steps&quot; )
 
-    newcast &lt;- dcast(newmelt, date ~ variable, fun.aggregate = sum, 
-                     na.rm = TRUE)
+    newcast &lt;- dcast(newmelt, date ~ variable, fun.aggregate = sum)
 
     hist(newcast$steps, main = &quot;Plot 3: Daily Total Steps after NAs Replaced&quot;,
          xlab = &quot;Steps per day&quot;, breaks = 40, col = &quot;gray&quot;,
@@ -500,13 +502,36 @@ newact &lt;- newact[order(newact$iposixct), ]
 
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAogAAAH4CAMAAAD+XezUAAAApVBMVEX9/v0AAAAAADkAAGUAOTkAOWUAOY8AZo8AZrU5AAA5ADk5AGU5OWU5OY85ZrU5j485j9plAABlADllAGVlOQBlOY9lZgBlZjllZmVlZrVltbVltf2POQCPOTmPOWWPjzmPtY+P27WP29qP2/21ZgC1Zjm1ZmW1tWW124+1/rW1/tq1/v2+vr7ajzna24/a/rXa/tra/v39tWX924/9/rX9/tr9/v2G/4XrAAAAN3RSTlP///////////////////////////////////////////////////////////////////////8AEFmdiwAAAAlwSFlzAAALEgAACxIB0t1+/AAAFNFJREFUeJztnYua4zYZQMlsGTItC8luS4HMQmECtB1MmVz8/o+GJfka24pl/flHMed8O5uMoosln5Esx5Z/lQMkwK/eewMADIgISYCIkASICEmAiJAEiAhJgIiQBIgISYCIkASICEmAiJAEiAhJgIiQBIgISYCIkASICEmAiJAEiAhJgIiQBIgISYCIkASICEmAiJAEiAhJgIiQBHct4mm7MuyKNx9eW+H7XfP5eiB6K+TD60Xa87ON1E6333USNJk9vnU/vcLxafXwMhK/yG5nCjfZF5uw7n9s6Gxpf5vGOG3tlibNEkR8eOnui33pmnNqfRl9tbnI5IqI+9WAiC6vdffTK9ioI/GL/ApZnIiFsJdqVZs+JBQivjuugferjdsXmZXMmmQ1Oj49vpmfak+514PZywfrb9Uj/vxsgypBTZr8IrtWgjqOTekKy1xPW4j0L9dvFTLVNrm0NqNff3sR/+F7k60zbVOKmK3+aG1t5eHKbarZLsuGlttnN9emKWPZgD8j4m3pirh3PVkjosHo1RXR9Emug3GKmp+s2Gd7K4TBidjJrp2gjFPv5qKwfdnTlt2pidf0X+X7/7ZE7MS3sYqM//Dh1YpY/Pfj07pO99ZsequanbJMJdx7FzgUS3G3zOLORWwNzccn22OZo7Bm9Nu3x+HSosx9XEno0q5dZ2SxIvaz6xxQ2h1s3ptPbQKTQRG6sYd7ZafaLboemtvx13WEH582diOqjWnnUQ3N64Gy2n9nxydXTh3LBmSIeFvc7ilHzIPdp7Zvax2GtfzqiGiSNiKe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" alt="plot of chunk ImputedHistogram"/> </p>
 
-<pre><code class="r">    mean(newcast$steps) ; median(newcast$steps)
+<pre><code class="r">### examining changes in mean, median and totals steps after NAs replaced
+
+    mean(newcast$steps) ; median(newcast$steps)
 </code></pre>
 
 <pre><code>## [1] 10826
 </code></pre>
 
 <pre><code>## [1] 10714
+</code></pre>
+
+<pre><code class="r">    (mean(newcast$steps) - mean(actcast$steps))/mean(actcast$steps)
+</code></pre>
+
+<pre><code>## [1] 0.005571
+</code></pre>
+
+<pre><code class="r">    (median(newcast$steps) - median(actcast$steps))/median(actcast$steps)
+</code></pre>
+
+<pre><code>## [1] -0.004738
+</code></pre>
+
+<pre><code class="r">    sum(newact$steps) ; sum(activity$steps)
+</code></pre>
+
+<pre><code>## [1] 660396
+</code></pre>
+
+<pre><code>## [1] 570608
 </code></pre>
 
 <p><strong>Remarks (#4 in &#39;Imputing missing values section)</strong></p>
@@ -518,6 +543,12 @@ and the median by -0.47%.</strong></p>
 <p>Imputing data to the NAs changed the <strong>total steps to 660,396 from 570,608.</strong>  This change in totals is consistent with adding 8 days of missing data to the 53 days of good data to create the 61 day dataset.</p>
 
 <p>Here is a comparison of summary statistics before &amp; after imputing values to NAs:</p>
+
+<pre><code class="r">OriginalSet &lt;- summary(actcast$steps, digits=5)
+ImputedSet &lt;- summary(newcast$steps, digits=5)
+NetChanges &lt;- ImputedSet - OriginalSet
+rbind(ImputedSet, OriginalSet, NetChanges)
+</code></pre>
 
 <pre><code>##             Min. 1st Qu. Median  Mean 3rd Qu.  Max.
 ## ImputedSet    41    8918  10714 10826   12883 21194

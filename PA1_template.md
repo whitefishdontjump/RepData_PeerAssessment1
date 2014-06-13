@@ -108,8 +108,7 @@ For this part of the assignment, you can ignore the missing values in the datase
 ##  Recast the data by days and calculate sum for each day
 
     actmelt <- melt(activity, id.vars = "date", measure.vars="steps" ) 
-    actcast <- dcast(actmelt, date ~ variable, fun.aggregate = sum, 
-                     na.rm = TRUE)
+    actcast <- dcast(actmelt, date ~ variable, fun.aggregate = sum)
 
 ## create the histogram
 
@@ -126,11 +125,9 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 
 ```r
-    meancast <- dcast(actmelt, date ~ variable, fun.aggregate = mean, 
-                     na.rm = TRUE)
+    meancast <- dcast(actmelt, date ~ variable, fun.aggregate = mean)
 
-    mediancast <- dcast(actmelt, date ~ variable, fun.aggregate = median, 
-                     na.rm = TRUE)
+    mediancast <- dcast(actmelt, date ~ variable, fun.aggregate = median)
 ```
 
 The series of daily medians are all zero, because on each and every day, more than half of the intervals have zero steps. The summary() on the series of medians
@@ -208,8 +205,7 @@ two month period ending November 30, 2012.
         stepmelt <- melt(activity, id.vars = c("date", "interval"), 
                          measure.vars= "steps" )
 
-        stepcast <- dcast(stepmelt, interval ~ variable, fun.aggregate = mean, 
-                                 na.rm = TRUE)
+        stepcast <- dcast(stepmelt, interval ~ variable, fun.aggregate = mean)
 
 
 ###     add a column with POSIXct interval for X axis then plot.
@@ -232,6 +228,13 @@ two month period ending November 30, 2012.
 ###     determine the maximum average interval
 
         stepmax <- stepcast[(max(stepcast$steps)==stepcast$steps),]
+        
+        stepmax
+```
+
+```
+##     interval steps          intervalct
+## 104     0835 206.2 0000-01-01 08:35:00
 ```
 
 
@@ -295,23 +298,23 @@ Both the uniformity of the dates selected by this method, and the resulting data
 
 
 ```r
-## segregate good and bad data
+##  segregate good and bad data
 
-actbad <- activityraw[!complete.cases(activityraw), ]  ## df of NAs
+    actbad <- activityraw[!complete.cases(activityraw),]  ## df of NAs
+    
+    datelist <- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
 
-datelist <- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
+##  create a uniformly distributed vector of good dates with
+##  length equal to the rows of NA data (actbad)
 
-## create a uniformly distributed vector of good dates with length equal to
-## the rows of NA data (actbad)
+    set.seed(42)
 
-set.seed(42)
+    rdate <- datelist[round(runif(n = nrow(actbad), min = 0.5, 
+                        max = (length(datelist + 0.5))))]   
 
-randlist <- datelist[round(runif(n = nrow(actbad), min = 0.5, max = (length(datelist + 
-    0.5))))]
+##  verify good distribution of dates
 
-## verify good distribution of dates
-
-summary(randlist)
+    summary(rdate)
 ```
 
 ```
@@ -322,23 +325,24 @@ summary(randlist)
 ```
 
 ```r
-## replace the NAs steps in actbad with selected values from activity To Do:
-## Replace for() with sapply, time permitting
+##  replace the NAs steps in actbad with selected values from activity
 
-intervalist <- actbad[, "interval"]
+    intbad <- actbad[,"interval"]  
+    
+    for(i in seq_along(rdate)) {
+        
+            actbad[i, "steps"] <- 
+                    activity[ (rdate[i] == activity$date) & 
+                              (intbad[i] == activity$interval),
+                              "steps"]
 
-for (i in seq_along(randlist)) {
-    
-    actbad[i, 1] <- activity[(randlist[i] == activity$date) & (intervalist[i] == 
-        activity$interval), "steps"]
-    
-}
+    }
 
 ## combine data to make the new dataset (Question 3 in this section)
 
-newact <- rbind(activity, actbad)
+    newact <- rbind(activity, actbad)
 
-newact <- newact[order(newact$iposixct), ]
+    newact <- newact[order(newact$iposixct),]
 ```
 
 -------------------------------------------------------------------------------
@@ -352,8 +356,7 @@ newact <- newact[order(newact$iposixct), ]
 
     newmelt <- melt(newact, id.vars = "date", measure.vars= "steps" )
 
-    newcast <- dcast(newmelt, date ~ variable, fun.aggregate = sum, 
-                     na.rm = TRUE)
+    newcast <- dcast(newmelt, date ~ variable, fun.aggregate = sum)
 
     hist(newcast$steps, main = "Plot 3: Daily Total Steps after NAs Replaced",
          xlab = "Steps per day", breaks = 40, col = "gray",
@@ -363,6 +366,8 @@ newact <- newact[order(newact$iposixct), ]
 ![plot of chunk ImputedHistogram](figure/ImputedHistogram.png) 
 
 ```r
+### examining changes in mean, median and totals steps after NAs replaced
+
     mean(newcast$steps) ; median(newcast$steps)
 ```
 
@@ -372,6 +377,34 @@ newact <- newact[order(newact$iposixct), ]
 
 ```
 ## [1] 10714
+```
+
+```r
+    (mean(newcast$steps) - mean(actcast$steps))/mean(actcast$steps)
+```
+
+```
+## [1] 0.005571
+```
+
+```r
+    (median(newcast$steps) - median(actcast$steps))/median(actcast$steps)
+```
+
+```
+## [1] -0.004738
+```
+
+```r
+    sum(newact$steps) ; sum(activity$steps)
+```
+
+```
+## [1] 660396
+```
+
+```
+## [1] 570608
 ```
 
 **Remarks (#4 in 'Imputing missing values section)**
@@ -384,6 +417,13 @@ and the median by -0.47%.**
 Imputing data to the NAs changed the **total steps to 660,396 from 570,608.**  This change in totals is consistent with adding 8 days of missing data to the 53 days of good data to create the 61 day dataset.
 
 Here is a comparison of summary statistics before & after imputing values to NAs:
+
+```r
+OriginalSet <- summary(actcast$steps, digits=5)
+ImputedSet <- summary(newcast$steps, digits=5)
+NetChanges <- ImputedSet - OriginalSet
+rbind(ImputedSet, OriginalSet, NetChanges)
+```
 
 ```
 ##             Min. 1st Qu. Median  Mean 3rd Qu.  Max.
