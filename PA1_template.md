@@ -73,6 +73,7 @@ hours and minutes.*
     library("lubridate")
     library("reshape2")
     library("ggplot2")
+    library("scales")
 ```
 
 
@@ -114,10 +115,10 @@ For this part of the assignment, you can ignore the missing values in the datase
 
     hist(actcast$steps, main = "Plot 1: Frequency of Total Steps/Day",
          xlab = "Steps Per Day", breaks = 40, col = "gray",
-         ylab= "Frequency (count per 61 day period)")
+         ylab= "Frequency (per 2 month period)")
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+![plot of chunk DailyStepTotal](figure/DailyStepTotal.png) 
 
 *Comment: There are 2 days in the set with 0 steps, in addition to 8 days of NAs which are excluded from this plot.*
 
@@ -165,13 +166,13 @@ The **mean is 10,766 steps/day** and the **median is 10,765 steps/day** for the 
         stepcast$intervalct <- parse_date_time (stepcast$interval, "HM")
 
         plot(x = stepcast$intervalct, y = stepcast$steps, type="l",  
-             ylab = "Steps per Interval", 
+             ylab = "Mean Steps per Interval", 
              xlab = "Time of Day (288 intervals/day)",
-             main = "Plot 2: Mean of Steps per 5 Minute Interval"
+             main = "Plot 2: Average Steps per 5 Minute Interval"
              )
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+![plot of chunk IntervalStepPlot](figure/IntervalStepPlot.png) 
 
 **Answer to Question 2 in this section:**
 
@@ -228,7 +229,9 @@ In other words, about **13 %** of the step data is NA.
 
 **Question 2: Explanation: Strategy for filling missing data**
 
-All of the NAs occur on 8 dates out of 61 dates, which is 13% of the dates, consistent with total NA count. As a result, there are only 53 observations for each interval.
+All of the NAs occur on 8 dates out of 61 dates, which is **13%** of the dates, consistent with total NA count.
+
+As a result, there are only **53** observations for each interval.
 
 Using a uniform distribution, seeded, with range, 0.5 to 53.5, and subsequently
 rounded to give an integer value (1 to 53),  this random result can specify which 
@@ -268,8 +271,8 @@ summary(randlist)
 ```
 
 ```r
-## replace the NAs steps in actbad with selected values from activity note:
-## time permitting, I will eliminate for() and use sapply().
+## replace the NAs steps in actbad with selected values from activity To Do:
+## Replace for() with sapply, time permitting
 
 intervalist <- actbad[, "interval"]
 
@@ -303,10 +306,10 @@ newact <- newact[order(newact$iposixct), ]
 
     hist(newcast$steps, main = "Plot 3: Daily Total Steps after NAs Replaced",
          xlab = "Steps per day", breaks = 40, col = "gray",
-         ylab= "Frequency (days in 61 day period)")
+         ylab= "Frequency (days in 2 Month period)")
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+![plot of chunk ImputedHistogram](figure/ImputedHistogram.png) 
 
 ```r
     mean(newcast$steps) ; median(newcast$steps)
@@ -339,7 +342,8 @@ Here is a comparison of summary statistics before & after imputing values to NAs
 ```
 Imputing the missing data did not significantly alter the summary statistics.  
 
-**In summary, the uniform random data and interval matching strategy worked as expected:** NAs were replaced with representative values did not substantially alter the character of the data.
+**In summary, the uniform random data and interval matching strategy worked as expected:**  
+The NAs were replaced with representative values which did not substantially alter the character of the data.
 
 -------------------------------------------------------------------------------
 
@@ -366,7 +370,7 @@ weeker <- c("weekend", rep("weekday", 5), "weekend")
 newact$dayo <- as.factor(weeker[wday(newact$date)])
 ```
 
-*Comment: While the assignment suggested the weekdays() function, the wday() function, which returns an integer value for the day, required less typing. ;)*
+*Comment: While the assignment suggested the weekdays() function,  I chose the wday() function. It returns an integer value for day and required less typing. ;)*
 
 
 ```r
@@ -383,15 +387,67 @@ newact$dayo <- as.factor(weeker[wday(newact$date)])
 ##     add a column with POSIXct interval for X axis and then plot.
 
         daycast$intervalct <- parse_date_time (daycast$interval, "HM")
-    
-        qplot(intervalct, steps, data = daycast, facets = dayo~., geom = "line", 
-              xlab = "Interval (Time of Day)", ylab = "Steps/Day",
-              main = "Mean Steps per 5 Minute Interval for Weekdays & Weekends")
+
+        x = ggplot(daycast, aes(x = intervalct, y = steps))
+        x = x + geom_line() + facet_grid(dayo~.)
+        x = x + labs(x = "Time of Day", 
+                     y = "Steps per 5 Minute Interval" )
+        x = x + ggtitle("Plot 4: Mean Steps per Interval ~ Weekdays vs. Weekends")
+        x = x + scale_x_datetime(labels = date_format("%H:%M"))
+        print(x)
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13.png) 
+![plot of chunk WdayWkendPlotMean](figure/WdayWkendPlotMean.png) 
 
-*Comment: Weekends seem to be characterized by sleeping in, followed by
-more changes in activity levels throughout the day, and staying up later.
+
+*Comments:*
+
+*1. Weekends seem to be characterized by sleeping in, followed by more changes in activity levels throughout the day, and staying up later.*
+
+*2, The maximum weekday value at 8:35 AM is higher than any weekend peak. This peak may be associated with an exercise routine or commuting.* 
+
+*A plot of the maximum value per interval follows.  While not required by the
+assignment, the occurance of some sporadic activities may be masked by the means.*
+
+    
+
+```r
+## Prepare the panel plot for maximum values weekday and weekend intervals
+
+## recast the data by 5 min. interval, then calculate max for each interval
+
+    maxcast <- dcast(daymelt, dayo + interval ~ variable, 
+                         fun.aggregate = max, "")  ## needed dummy arg
+
+    maxcast$steps <- as.numeric(maxcast$steps) ## dcast made it "character"
+
+## add a column with POSIXct interval for X axis and then plot.
+
+    maxcast$intervalct <- parse_date_time (maxcast$interval, "HM")
+
+    x = ggplot(maxcast, aes(x = intervalct, y = steps))
+    x = x + geom_line() + facet_grid(dayo~.)
+    x = x + labs(x = "Time of Day", 
+                 y = "Steps per 5 Minute Interval" )
+    x = x + ggtitle("Plot 5: Maximum Steps per Interval ~ Weekdays vs. Weekends")
+    x = x + scale_x_datetime(labels = date_format("%H:%M"))
+    print(x)
+```
+
+![plot of chunk WkdayWkendPlotMax](figure/WkdayWkendPlotMax.png) 
+
+*Comments:*
+
+*1. The plot of maximum steps per interval provides a better context for the maximum mean value at 8:35 AM.*
+    
+*2. There are multiple intervals on both weekdays and weekends with maxima that are 700 to 800 steps per interval. This rate is more than 2 steps per second. Perhaps an exercise routine that is done on different times (but usually in the early morning) is the cause of the higher maxima.*
+
+
+
+    
+**Thank you for reviewing my work.**
+
+I hope that you will leave comments, both appreciative and constructively critical, with suggestions for improvements.
+
 
 end of assignment.
