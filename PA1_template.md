@@ -497,10 +497,23 @@ newact$dayo <- as.factor(weeker[wday(newact$date)])
 
 *2, The maximum weekday value at 8:35 AM is higher than any weekend peak. This peak may be associated with an exercise routine or commuting.* 
 
-*A plot of the maximum value per interval follows.  While not required by the
-assignment, the occurance of some sporadic activities may be masked by the means.*
+----------------------------------------------------------------------------------
 
-    
+**Thank you for reviewing my work.**
+
+I hope that you will leave comments, both appreciative and constructively critical, with suggestions for improvements.
+
+------------ this marks the end of the required assignment -----------------------
+
+
+### Supplementary Analysis ###
+----------------------------------------------------------------------------------
+
+Here are additional code and plots that I created. 
+They are not required by the assignment.
+
+*A line plot of the maximum value per interval, Weekdays vs. Weekends.*
+ 
 
 ```r
 ## Prepare the panel plot for maximum values weekday and weekend intervals
@@ -520,12 +533,12 @@ assignment, the occurance of some sporadic activities may be masked by the means
     x = x + geom_line() + facet_grid(dayo~.)
     x = x + labs(x = "Time of Day", 
                  y = "Steps per 5 Minute Interval" )
-    x = x + ggtitle("Plot 5: Maximum Steps per Interval ~ Weekdays vs. Weekends")
+    x = x + ggtitle("Plot A: Maximum Steps per Interval ~ Weekdays vs. Weekends")
     x = x + scale_x_datetime(labels = date_format("%H:%M"))
     print(x)
 ```
 
-![plot of chunk WkdayWkendPlotMax](figure/WkdayWkendPlotMax.png) 
+![plot of chunk SupplementaryPlotA](figure/SupplementaryPlotA.png) 
 
 *Comments:*
 
@@ -533,12 +546,7 @@ assignment, the occurance of some sporadic activities may be masked by the means
     
 *2. There are multiple intervals on both weekdays and weekends with maxima that are 700 to 800 steps per interval. This rate is more than 2 steps per second. Perhaps an exercise routine that is done on different times (but usually in the early morning) is the cause of the higher maxima.*
 
+------------------------------------------------------------------------------------
 
 
-    
-**Thank you for reviewing my work.**
-
-I hope that you will leave comments, both appreciative and constructively critical, with suggestions for improvements.
-
-
-end of assignment.
+end of document.
