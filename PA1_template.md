@@ -238,6 +238,7 @@ two month period ending November 30, 2012.
 ```
 
 
+
 The time interval with the highest (or maximum) average steps occurs at  **08:35** with a mean of **~ 206** steps.
 
 -------------------------------------------------------------------------------
@@ -260,6 +261,8 @@ Note that there are a number of days/intervals where there are missing values (c
 
 
 ```r
+##  get count of NAs, % of NAs
+
     sum(!complete.cases(activityraw)); mean(is.na(activityraw$steps))
 ```
 
@@ -269,6 +272,20 @@ Note that there are a number of days/intervals where there are missing values (c
 
 ```
 ## [1] 0.1311
+```
+
+```r
+##  get number of days with and without NAs
+
+    length(unique(activityraw$date)); length(unique(activity$date))
+```
+
+```
+## [1] 61
+```
+
+```
+## [1] 53
 ```
 
 **Response to Question 1 in this Section:**
@@ -281,19 +298,34 @@ In other words, about **13 %** of the step data is NA.
 -------------------------------------------------------------------------------
 
 
-**Question 2: Explanation: Strategy for filling missing data**
+**Question 2: Explanation of Strategy for filling missing data**
 
 All of the NAs occur on 8 dates out of 61 dates, which is **13%** of the dates, consistent with total NA count.
 
-As a result, there are only **53** observations for each interval.
+As a result, there are only **53** observed values for each interval.
 
-Using a uniform distribution, seeded, with range, 0.5 to 53.5, and subsequently
-rounded to give an integer value (1 to 53),  this random result can specify which 
-date to select from the 53 dates with good data.
+***Strategy:***
 
-For each missing step value, a value from the same interval on another date will replace the NA. The date will be chosen using runif() to execute the random uniform selection. This will be applied to all NA values of the variable "steps".
+1. For each interval with an NA, copy the steps from the same interval on another date with good data.
 
-Both the uniformity of the dates selected by this method, and the resulting data will be summarized for comparison with the original data set
+2. By randomly and uniformly sampling from the existing set of good dates, the sampled values will trend toward matching the distribution in the existing data, whatever its characteristics may be.
+
+**Executing the Strategy in R:**
+
+1. Using a uniform distribution (runif() function), seeded, with range, 0.5 to 53.5, and subsequently rounded to give an integer value (1 to 53),  this random result will specify which date to select from the 53 dates with good data. 
+
+2. A vector "rdate" will contain the uniformly random dates from runif(), and have length equal to the number of NAs, 2304.  A vector "intbad" will contain the sequence of intervals in the data frame of NA data, "actbad".
+
+3. For each NA row(i) in "actbad", the variable "steps" will be imputed by copying the value from the row of clean data that contains the date "rdate(i)" AND the interval  "intbad(i)"
+
+**Verifying the Results**
+
+1.  Review the summary statistics for the random date vector, "rdate." The mean median and quartiles should be uniformly distributed.
+
+2.  Prepare a histogram of daily totals for the complete imputed dataset. The shape should be similar to that of Plot 1, the histogram of totals before distribution.
+
+3. Compare the summary statistics before and after NA replacements, including the net change in statistics, in a table.
+
 
 
 
@@ -305,12 +337,16 @@ Both the uniformity of the dates selected by this method, and the resulting data
     datelist <- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
 
 ##  create a uniformly distributed vector of good dates with
-##  length equal to the rows of NA data (actbad)
+##  length equal to the rows of NA data (actbad) and
+##  a vector of intervals extracted from the NA data frame.
+##  Both of these vectors will have length of 2304.
 
     set.seed(42)
 
     rdate <- datelist[round(runif(n = nrow(actbad), min = 0.5, 
                         max = (length(datelist + 0.5))))]   
+
+    intbad <- actbad[,"interval"]  ## for convenience & legibility only
 
 ##  verify good distribution of dates
 
@@ -326,8 +362,6 @@ Both the uniformity of the dates selected by this method, and the resulting data
 
 ```r
 ##  replace the NAs steps in actbad with selected values from activity
-
-    intbad <- actbad[,"interval"]  
     
     for(i in seq_along(rdate)) {
         
@@ -342,7 +376,7 @@ Both the uniformity of the dates selected by this method, and the resulting data
 
     newact <- rbind(activity, actbad)
 
-    newact <- newact[order(newact$iposixct),]
+    newact <- newact[order(newact$iposixct),]   ## ordered by date & time
 ```
 
 -------------------------------------------------------------------------------
@@ -419,10 +453,29 @@ Imputing data to the NAs changed the **total steps to 660,396 from 570,608.**  T
 Here is a comparison of summary statistics before & after imputing values to NAs:
 
 ```r
-OriginalSet <- summary(actcast$steps, digits=5)
-ImputedSet <- summary(newcast$steps, digits=5)
-NetChanges <- ImputedSet - OriginalSet
-rbind(ImputedSet, OriginalSet, NetChanges)
+## examine the replacement set summary stats for steps per interval    
+
+    OriginalSteps <- summary(activity$steps)
+    ImputedSteps <- summary(newact$steps)
+    NetChangeSteps <- OriginalSteps - ImputedSteps
+    rbind(ImputedSteps, OriginalSteps, NetChangeSteps)
+```
+
+```
+##                Min. 1st Qu. Median Mean 3rd Qu. Max.
+## ImputedSteps      0       0      0 37.6      12  806
+## OriginalSteps     0       0      0 37.4      12  806
+## NetChangeSteps    0       0      0 -0.2       0    0
+```
+
+```r
+##  Generate a table comparing daily totals
+##  before and after imputing data to NAs
+
+    OriginalSet <- summary(actcast$steps, digits=5)
+    ImputedSet <- summary(newcast$steps, digits=5)
+    NetChanges <- ImputedSet - OriginalSet
+    rbind(ImputedSet, OriginalSet, NetChanges)
 ```
 
 ```

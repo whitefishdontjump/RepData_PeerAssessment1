@@ -409,13 +409,26 @@ two month period ending November 30, 2012.</p>
 
 <hr/>
 
-<pre><code class="r">    sum(!complete.cases(activityraw)); mean(is.na(activityraw$steps))
+<pre><code class="r">##  get count of NAs, % of NAs
+
+    sum(!complete.cases(activityraw)); mean(is.na(activityraw$steps))
 </code></pre>
 
 <pre><code>## [1] 2304
 </code></pre>
 
 <pre><code>## [1] 0.1311
+</code></pre>
+
+<pre><code class="r">##  get number of days with and without NAs
+
+    length(unique(activityraw$date)); length(unique(activity$date))
+</code></pre>
+
+<pre><code>## [1] 61
+</code></pre>
+
+<pre><code>## [1] 53
 </code></pre>
 
 <p><strong>Response to Question 1 in this Section:</strong></p>
@@ -426,19 +439,34 @@ two month period ending November 30, 2012.</p>
 
 <hr/>
 
-<p><strong>Question 2: Explanation: Strategy for filling missing data</strong></p>
+<p><strong>Question 2: Explanation of Strategy for filling missing data</strong></p>
 
 <p>All of the NAs occur on 8 dates out of 61 dates, which is <strong>13%</strong> of the dates, consistent with total NA count.</p>
 
-<p>As a result, there are only <strong>53</strong> observations for each interval.</p>
+<p>As a result, there are only <strong>53</strong> observed values for each interval.</p>
 
-<p>Using a uniform distribution, seeded, with range, 0.5 to 53.5, and subsequently
-rounded to give an integer value (1 to 53),  this random result can specify which 
-date to select from the 53 dates with good data.</p>
+<p><strong><em>Strategy:</em></strong></p>
 
-<p>For each missing step value, a value from the same interval on another date will replace the NA. The date will be chosen using runif() to execute the random uniform selection. This will be applied to all NA values of the variable &ldquo;steps&rdquo;.</p>
+<ol>
+<li><p>For each interval with an NA, copy the steps from the same interval on another date with good data.</p></li>
+<li><p>By randomly and uniformly sampling from the existing set of good dates, the sampled values will trend toward matching the distribution in the existing data, whatever its characteristics may be.</p></li>
+</ol>
 
-<p>Both the uniformity of the dates selected by this method, and the resulting data will be summarized for comparison with the original data set</p>
+<p><strong>Executing the Strategy in R:</strong></p>
+
+<ol>
+<li><p>Using a uniform distribution (runif() function), seeded, with range, 0.5 to 53.5, and subsequently rounded to give an integer value (1 to 53),  this random result will specify which date to select from the 53 dates with good data. </p></li>
+<li><p>A vector &ldquo;rdate&rdquo; will contain the uniformly random dates from runif(), and have length equal to the number of NAs, 2304.  A vector &ldquo;intbad&rdquo; will contain the sequence of intervals in the data frame of NA data, &ldquo;actbad&rdquo;.</p></li>
+<li><p>For each NA row(i) in &ldquo;actbad&rdquo;, the variable &ldquo;steps&rdquo; will be imputed by copying the value from the row of clean data that contains the date &ldquo;rdate(i)&rdquo; AND the interval  &ldquo;intbad(i)&rdquo;</p></li>
+</ol>
+
+<p><strong>Verifying the Results</strong></p>
+
+<ol>
+<li><p>Review the summary statistics for the random date vector, &ldquo;rdate.&rdquo; The mean median and quartiles should be uniformly distributed.</p></li>
+<li><p>Prepare a histogram of daily totals for the complete imputed dataset. The shape should be similar to that of Plot 1, the histogram of totals before distribution.</p></li>
+<li><p>Compare the summary statistics before and after NA replacements, including the net change in statistics, in a table.</p></li>
+</ol>
 
 <pre><code class="r">##  segregate good and bad data
 
@@ -447,12 +475,16 @@ date to select from the 53 dates with good data.</p>
     datelist &lt;- unique(activity$date)  ## unique non-NA dates, 10/02 - 11/29
 
 ##  create a uniformly distributed vector of good dates with
-##  length equal to the rows of NA data (actbad)
+##  length equal to the rows of NA data (actbad) and
+##  a vector of intervals extracted from the NA data frame.
+##  Both of these vectors will have length of 2304.
 
     set.seed(42)
 
     rdate &lt;- datelist[round(runif(n = nrow(actbad), min = 0.5, 
                         max = (length(datelist + 0.5))))]   
+
+    intbad &lt;- actbad[,&quot;interval&quot;]  ## for convenience &amp; legibility only
 
 ##  verify good distribution of dates
 
@@ -467,8 +499,6 @@ date to select from the 53 dates with good data.</p>
 
 <pre><code class="r">##  replace the NAs steps in actbad with selected values from activity
 
-    intbad &lt;- actbad[,&quot;interval&quot;]  
-
     for(i in seq_along(rdate)) {
 
             actbad[i, &quot;steps&quot;] &lt;- 
@@ -482,7 +512,7 @@ date to select from the 53 dates with good data.</p>
 
     newact &lt;- rbind(activity, actbad)
 
-    newact &lt;- newact[order(newact$iposixct),]
+    newact &lt;- newact[order(newact$iposixct),]   ## ordered by date &amp; time
 </code></pre>
 
 <hr/>
@@ -544,10 +574,27 @@ and the median by -0.47%.</strong></p>
 
 <p>Here is a comparison of summary statistics before &amp; after imputing values to NAs:</p>
 
-<pre><code class="r">OriginalSet &lt;- summary(actcast$steps, digits=5)
-ImputedSet &lt;- summary(newcast$steps, digits=5)
-NetChanges &lt;- ImputedSet - OriginalSet
-rbind(ImputedSet, OriginalSet, NetChanges)
+<pre><code class="r">## examine the replacement set summary stats for steps per interval    
+
+    OriginalSteps &lt;- summary(activity$steps)
+    ImputedSteps &lt;- summary(newact$steps)
+    NetChangeSteps &lt;- OriginalSteps - ImputedSteps
+    rbind(ImputedSteps, OriginalSteps, NetChangeSteps)
+</code></pre>
+
+<pre><code>##                Min. 1st Qu. Median Mean 3rd Qu. Max.
+## ImputedSteps      0       0      0 37.6      12  806
+## OriginalSteps     0       0      0 37.4      12  806
+## NetChangeSteps    0       0      0 -0.2       0    0
+</code></pre>
+
+<pre><code class="r">##  Generate a table comparing daily totals
+##  before and after imputing data to NAs
+
+    OriginalSet &lt;- summary(actcast$steps, digits=5)
+    ImputedSet &lt;- summary(newcast$steps, digits=5)
+    NetChanges &lt;- ImputedSet - OriginalSet
+    rbind(ImputedSet, OriginalSet, NetChanges)
 </code></pre>
 
 <pre><code>##             Min. 1st Qu. Median  Mean 3rd Qu.  Max.
