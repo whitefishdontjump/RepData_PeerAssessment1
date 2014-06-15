@@ -111,13 +111,14 @@ For this part of the assignment, you can ignore the missing values in the datase
     actcast <- dcast(actmelt, date ~ variable, fun.aggregate = sum)
 
 ## create the histogram
+    par(bg = "#F4F4F7")
 
     hist(actcast$steps, main = "Plot 1: Frequency of Total Steps/Day",
          xlab = "Steps Per Day", breaks = 40, col = "gray",
          ylab= "Frequency (per 2 month period)")
 ```
 
-![plot of chunk DailyStepTotal](figure/DailyStepTotal.png) 
+![plot of chunk Plot_1_DailyStepTotal](figure/Plot_1_DailyStepTotal.png) 
 
 *Comment: There are 2 days in the set with 0 steps, in addition to 8 days of NAs which are excluded from this plot.*
 
@@ -212,6 +213,8 @@ two month period ending November 30, 2012.
 
         stepcast$intervalct <- parse_date_time (stepcast$interval, "HM")
 
+        par(bg = "#F4F4F7")
+
         plot(x = stepcast$intervalct, y = stepcast$steps, type="l",  
              ylab = "Mean Steps per Interval", 
              xlab = "Time of Day (288 intervals/day)",
@@ -219,7 +222,7 @@ two month period ending November 30, 2012.
              )
 ```
 
-![plot of chunk IntervalStepPlot](figure/IntervalStepPlot.png) 
+![plot of chunk Plot_2_IntervalStepPlot](figure/Plot_2_IntervalStepPlot.png) 
 
 **Answer to Question 2 in this section:**
 
@@ -392,12 +395,14 @@ As a result, there are only **53** observed values for each interval.
 
     newcast <- dcast(newmelt, date ~ variable, fun.aggregate = sum)
 
+    par(bg = "#F4F4F7")
+
     hist(newcast$steps, main = "Plot 3: Daily Total Steps after NAs Replaced",
          xlab = "Steps per day", breaks = 40, col = "gray",
          ylab= "Frequency (days in 2 Month period)")
 ```
 
-![plot of chunk ImputedHistogram](figure/ImputedHistogram.png) 
+![plot of chunk Plot_3_ImputedHistogram](figure/Plot_3_ImputedHistogram.png) 
 
 ```r
 ### examining changes in mean, median and totals steps after NAs replaced
@@ -541,7 +546,7 @@ newact$dayo <- as.factor(weeker[wday(newact$date)])
         print(x)
 ```
 
-![plot of chunk WdayWkendPlotMean](figure/WdayWkendPlotMean.png) 
+![plot of chunk Plot_4_WdayWkendPlotMean](figure/Plot_4_WdayWkendPlotMean.png) 
 
 
 *Comments:*
@@ -556,7 +561,11 @@ newact$dayo <- as.factor(weeker[wday(newact$date)])
 
 I hope that you will leave comments, both appreciative and constructively critical, with suggestions for improvements.
 
------------- this marks the end of the required assignment -----------------------
+
+
+--------- ***this is the end of the required assignment*** --------------------
+
+
 
 
 ### Supplementary Analysis ###
@@ -591,7 +600,7 @@ They are not required by the assignment.
     print(x)
 ```
 
-![plot of chunk SupplementaryPlotA](figure/SupplementaryPlotA.png) 
+![plot of chunk Plot_A_Supplementary](figure/Plot_A_Supplementary.png) 
 
 *Comments:*
 

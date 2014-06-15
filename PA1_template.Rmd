@@ -108,17 +108,19 @@ For this part of the assignment, you can ignore the missing values in the datase
 2. Calculate and report the mean and median total number of steps taken per day
 
 
-```{r DailyStepTotal, fig.width=9}
+```{r Plot_1_DailyStepTotal, fig.width=10}
 ##  Recast the data by days and calculate sum for each day
 
     actmelt <- melt(activity, id.vars = "date", measure.vars="steps" ) 
     actcast <- dcast(actmelt, date ~ variable, fun.aggregate = sum)
 
 ## create the histogram
+    par(bg = "#F4F4F7")
 
     hist(actcast$steps, main = "Plot 1: Frequency of Total Steps/Day",
          xlab = "Steps Per Day", breaks = 40, col = "gray",
          ylab= "Frequency (per 2 month period)")
+         
 
 ```
 
@@ -177,7 +179,7 @@ two month period ending November 30, 2012.
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r IntervalStepPlot, fig.width=9}
+```{r Plot_2_IntervalStepPlot, fig.width=10}
 ## recast the data by 5 min. interval, then calculate mean for each interval
 
         stepmelt <- melt(activity, id.vars = c("date", "interval"), 
@@ -189,6 +191,8 @@ two month period ending November 30, 2012.
 ###     add a column with POSIXct interval for X axis then plot.
 
         stepcast$intervalct <- parse_date_time (stepcast$interval, "HM")
+
+        par(bg = "#F4F4F7")
 
         plot(x = stepcast$intervalct, y = stepcast$steps, type="l",  
              ylab = "Mean Steps per Interval", 
@@ -332,12 +336,14 @@ As a result, there are only **`r 61-8`** observed values for each interval.
 **Responses to Question 4 for this section of the assignment**
 
 
-```{r ImputedHistogram, fig.width=9}
+```{r Plot_3_ImputedHistogram, fig.width=10}
 ## prep histogram
 
     newmelt <- melt(newact, id.vars = "date", measure.vars= "steps" )
 
     newcast <- dcast(newmelt, date ~ variable, fun.aggregate = sum)
+
+    par(bg = "#F4F4F7")
 
     hist(newcast$steps, main = "Plot 3: Daily Total Steps after NAs Replaced",
          xlab = "Steps per day", breaks = 40, col = "gray",
@@ -418,7 +424,7 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 *Comment: While the assignment suggested the weekdays() function,  I chose the wday() function. It returns an integer value for day and required less typing. ;)*
 
-```{r WdayWkendPlotMean, fig.width = 9}
+```{r Plot_4_WdayWkendPlotMean, fig.width = 10}
 
 ## Prepare the panel plot per Question 2 in this section
 
@@ -457,7 +463,11 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 I hope that you will leave comments, both appreciative and constructively critical, with suggestions for improvements.
 
------------- this marks the end of the required assignment -----------------------
+
+
+--------- ***this is the end of the required assignment*** --------------------
+
+
 
 
 ### Supplementary Analysis ###
@@ -468,7 +478,7 @@ They are not required by the assignment.
 
 *A line plot of the maximum value per interval, Weekdays vs. Weekends.*
  
-```{r SupplementaryPlotA, fig.width = 9}
+```{r Plot_A_Supplementary, fig.width = 10}
 
 ## Prepare the panel plot for maximum values weekday and weekend intervals
 
