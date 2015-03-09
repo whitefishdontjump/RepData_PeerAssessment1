@@ -1,6 +1,6 @@
 Reproducible Research: Assessment 1 
 ========================================================
-  prepared by WhitefishDontJump, June 2014
+  prepared by WhitefishDontJump, March 2015
 
 ### General Note to Peer Reviewer:
 I will be weaving text from the assignment's text, including the introduction, data source, and data description into this report.
@@ -471,6 +471,7 @@ I hope that you will leave comments, both appreciative and constructively critic
 
 
 ### Supplementary Analysis ###
+
 ----------------------------------------------------------------------------------
 
 Here are additional code and plots that I created. 
